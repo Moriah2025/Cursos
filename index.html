@@ -11,24 +11,55 @@
     <style>
         body { background-color: #050505 !important; }
         .slide-item { will-change: transform, opacity; }
-        /* Transiciones suaves entre sesiones */
+        
+        /* Transiciones suaves */
         .session-tab {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        /* Reglas CSS inteligentes para impresión selectiva del comprobante */
+
+        /* Diapositivas académicas interactivas en el perfil de alumno */
+        .academic-slide {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Ocultar hojas de impresión en pantalla normal */
+        .attendance-print-sheet, .receipt-print-sheet {
+            display: none;
+        }
+
+        /* Reglas de impresión profesional aisladas */
         @media print {
             body { background-color: #ffffff !important; color: #000000 !important; }
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            /* Estilizar el comprobante en papel para que luzca impecable */
-            .comprobante-card {
-                border: 2px solid #000000 !important;
+            
+            /* Impresión de Planilla de Asistencia */
+            body.print-mode-attendance .attendance-print-sheet {
+                display: block !important;
+            }
+            body.print-mode-attendance #content-main-app,
+            body.print-mode-attendance #vista-super-admin,
+            body.print-mode-attendance #vista-estudiante,
+            body.print-mode-attendance footer {
+                display: none !important;
+            }
+
+            /* Impresión de Comprobante del Alumno */
+            body.print-mode-receipt .receipt-print-sheet {
+                display: block !important;
+            }
+            body.print-mode-receipt #content-main-app,
+            body.print-mode-receipt #vista-super-admin,
+            body.print-mode-receipt #vista-estudiante,
+            body.print-mode-receipt footer {
+                display: none !important;
+            }
+            
+            .comprobante-card-print {
+                border: 3px solid #000000 !important;
                 background-color: #ffffff !important;
                 color: #000000 !important;
-                padding: 24px !important;
-                border-radius: 8px !important;
-                box-shadow: none !important;
+                padding: 30px !important;
+                border-radius: 12px !important;
                 max-width: 100% !important;
                 width: 100% !important;
             }
@@ -43,16 +74,15 @@
         <span id="toastMessage" class="text-xs font-bold leading-tight"></span>
     </div>
 
-    <!-- ==========================================
-         HOJA DE IMPRESIÓN EXCLUSIVA: ASISTENCIA
-    =========================================== -->
-    <div class="hidden attendance-print-sheet p-6 text-black font-sans">
+    <!-- ====================================================================
+         HOJA DE IMPRESIÓN 1: PLANILLA DE ASISTENCIA FÍSICA (AI-GUARDRAIL PROOF)
+    ========================================================================= -->
+    <div class="attendance-print-sheet p-6 text-black font-sans bg-white">
         <div class="text-center space-y-2 border-b-2 border-black pb-4">
             <h1 class="text-2xl font-black uppercase tracking-wider">Planilla de Asistencia - Taller KROMA</h1>
             <p class="text-xs font-bold uppercase">Taller Intensivo: Diseño Gráfico Textil Profesional</p>
             <p class="text-[10px] text-gray-600">Facilitador: Carlos Igarza • Fecha del Evento: ______/______/2026</p>
         </div>
-        
         <table class="w-full mt-6 border-collapse text-xs">
             <thead>
                 <tr class="bg-gray-100">
@@ -66,18 +96,28 @@
                 </tr>
             </thead>
             <tbody id="printAttendanceRows">
-                <!-- Se llena dinámicamente mediante JS -->
+                <!-- Se inyecta por JavaScript -->
             </tbody>
         </table>
-        
         <div class="mt-12 flex justify-between text-[10px] text-gray-500 font-mono">
             <p>Impreso desde el Panel Administrativo KROMA</p>
             <p>Página 1 de 1</p>
         </div>
     </div>
 
-    <div class="max-w-md md:max-w-3xl mx-auto px-4 py-4 md:py-8 space-y-6">
+    <!-- ====================================================================
+         HOJA DE IMPRESIÓN 2: COMPROBANTE INDIVIDUAL DEL ALUMNO (AI-GUARDRAIL PROOF)
+    ========================================================================= -->
+    <div class="receipt-print-sheet p-8 text-black font-sans bg-white">
+        <div id="receiptPrintContainer" class="comprobante-card-print space-y-6">
+            <!-- El JS copiará el comprobante aprobado aquí para imprimir de forma limpia -->
+        </div>
+    </div>
 
+    <!-- ==========================================
+         VISTA GLOBAL 1: LANDING PAGE PÚBLICA (TEMARIO Y REGISTRO)
+    =========================================== -->
+    <div id="content-main-app" class="max-w-md md:max-w-3xl mx-auto px-4 py-4 md:py-8 space-y-6">
         <header class="text-center space-y-2 no-print">
             <div class="inline-flex items-center gap-1.5 bg-orange-600/10 text-[#E04A15] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-[#E04A15]/20">
                 <span class="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
@@ -88,7 +128,7 @@
             </h1>
         </header>
 
-        <!-- Barra de navegación reconfigurada -->
+        <!-- Barra de navegación pública -->
         <nav class="bg-gray-950/80 backdrop-blur-md rounded-2xl p-1.5 border border-gray-900/60 flex justify-between gap-1 no-print sticky top-2 z-50">
             <button onclick="cambiarSesion('temario')" id="tab-temario" class="session-tab flex-1 py-3 text-center rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 md:gap-2 cursor-pointer bg-orange-600 text-white font-bold text-xs md:text-sm shadow-lg">
                 <i class="fa-solid fa-graduation-cap text-sm"></i>
@@ -98,17 +138,14 @@
                 <i class="fa-solid fa-wallet text-sm"></i>
                 <span>Inscripción</span>
             </button>
-            <button onclick="cambiarSesion('comprobante')" id="tab-comprobante" class="session-tab flex-1 py-3 text-center rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 md:gap-2 cursor-pointer text-gray-400 hover:text-white hover:bg-gray-900/60 font-medium text-xs md:text-sm relative">
-                <i class="fa-solid fa-receipt text-sm"></i>
-                <span>Comprobante</span>
-                <span id="badgeAprobado" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-black hidden animate-ping"></span>
+            <button onclick="cambiarSesion('comprobante')" id="tab-comprobante" class="session-tab flex-1 py-3 text-center rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 md:gap-2 cursor-pointer text-gray-400 hover:text-white hover:bg-gray-900/60 font-medium text-xs md:text-sm">
+                <i class="fa-solid fa-key text-sm"></i>
+                <span>Estudiante</span>
             </button>
         </nav>
 
-        <!-- Contenedor Central Dinámico -->
         <main class="relative bg-gray-950/20 rounded-2xl border border-gray-900/50 shadow-2xl overflow-hidden min-h-[420px]">
-
-            <!-- SESIÓN 1: TEMARIO -->
+            <!-- SESIÓN 1: TEMARIO PÚBLICO -->
             <div id="sesion-temario" class="p-4 sm:p-6 md:p-8 space-y-6">
                 <div class="relative bg-gray-900/30 rounded-2xl p-4 md:p-6 border border-gray-900/60 space-y-4 overflow-hidden min-h-[300px] flex items-center">
                     
@@ -136,7 +173,7 @@
                         </div>
                         <div class="bg-gray-950/60 p-3 rounded-lg border border-gray-800 flex items-center gap-3 relative z-10">
                             <i class="fa-solid fa-wand-magic-sparkles text-xl text-[#E04A15]"></i>
-                            <p class="text-[10px] text-gray-400">Aislamiento de fondos complejos and resolución generativa.</p>
+                            <p class="text-[10px] text-gray-400">Aislamiento de fondos complejos y resolución generativa.</p>
                         </div>
                     </div>
 
@@ -198,7 +235,7 @@
                 </button>
             </div>
 
-            <!-- SESIÓN 2: REGISTRO Y MÉTODOS DE PAGO -->
+            <!-- SESIÓN 2: REGISTRO Y METODOS DE PAGO -->
             <div id="sesion-registro" class="hidden p-4 sm:p-6 md:p-8 space-y-6">
                 <div class="bg-gray-950/60 border border-gray-900 rounded-xl p-4 space-y-3">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-900 pb-2 flex items-center gap-1.5">
@@ -231,18 +268,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- RECUADRO CON LA CLAVE DE ACCESO EXPOSITIVA -->
-                    <div class="bg-orange-600/10 border border-orange-500/20 p-3 rounded-lg space-y-1">
-                        <p class="text-[9px] font-bold text-orange-400 uppercase tracking-wider"><i class="fa-solid fa-key mr-1"></i> Clave de Acceso a la Plataforma del Curso</p>
-                        <div class="flex items-center justify-between bg-black/40 px-2.5 py-1.5 rounded-md border border-gray-800">
-                            <span class="text-white font-mono font-bold text-xs tracking-wider">KROMA-2026-TXT</span>
-                            <button type="button" onclick="copiarTexto('KROMA-2026-TXT', this)" class="text-gray-400 hover:text-orange-400 transition text-xs"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Formulario Compacto -->
+                <!-- Formulario de inscripción -->
                 <form id="registroForm" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -302,176 +330,452 @@
                         <i class="fa-solid fa-paper-plane mr-1"></i> Enviar Registro de Pago
                     </button>
                 </form>
-                
-                <!-- ESPACIO DE RESPUESTA EN WHATSAPP DESPUÉS DEL REGISTRO -->
-                <div id="contenedor-wa" class="hidden max-w-xs mx-auto pt-2">
-                    <a id="waEsperaBtn" href="#" target="_blank" class="flex items-center justify-center space-x-2 bg-emerald-600 active:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition w-full shadow-lg">
-                        <i class="fa-brands fa-whatsapp text-sm"></i>
-                        <span>Notificar Registro por WhatsApp</span>
-                    </a>
-                </div>
             </div>
 
-            <!-- SESIÓN 3: COMPROBANTE DE INSCRIPCIÓN (PENDIENTE / APROBADO) -->
+            <!-- SESIÓN 3: ACCESO AL PORTAL DE ESTUDIANTES -->
             <div id="sesion-comprobante" class="hidden p-4 sm:p-6 md:p-8 space-y-6">
-                
-                <!-- ESTADO 1: BLOQUEADO (NO REGISTRADO) -->
-                <div id="comp-bloqueado" class="text-center py-10 space-y-4">
-                    <div class="w-16 h-16 bg-gray-900/60 border border-gray-800 text-gray-600 rounded-full flex items-center justify-center text-2xl mx-auto">
-                        <i class="fa-solid fa-lock"></i>
+                <!-- FORMULARIO DE ACCESO EXCLUSIVO -->
+                <div id="comp-login-form" class="bg-gray-950/60 p-5 rounded-2xl border border-gray-900 space-y-4 max-w-sm mx-auto">
+                    <div class="text-center">
+                        <i class="fa-solid fa-user-graduate text-orange-500 text-2xl"></i>
+                        <h4 class="text-sm font-black uppercase text-white mt-2">Portal Académico de Alumnos</h4>
+                        <p class="text-[10px] text-gray-500">Ingresa tus datos de registro para acceder al Aula Virtual, Diapositivas y Soporte.</p>
                     </div>
-                    <div class="space-y-1">
-                        <h3 class="text-base font-black text-gray-400 uppercase">Comprobante no disponible</h3>
-                        <p class="text-gray-600 text-xs max-w-xs mx-auto">Primero debes completar tu registro de pago en la pestaña de **Inscripción**.</p>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                            <input type="email" id="loginCorreo" placeholder="correo@ejemplo.com" class="w-full bg-black border border-gray-900 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-[#E04A15]">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-1">Número de Referencia</label>
+                            <input type="text" id="loginRef" placeholder="Ej: 987654" class="w-full bg-black border border-gray-900 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-[#E04A15]">
+                        </div>
+                        <button onclick="buscarComprobanteAlumno()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-xs uppercase transition tracking-wider cursor-pointer">
+                            <i class="fa-solid fa-sign-in-alt mr-1"></i> Ingresar a mi Sesión
+                        </button>
                     </div>
-                    <button onclick="cambiarSesion('registro')" class="bg-gray-900 hover:bg-gray-800 text-gray-300 font-bold px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-wider border border-gray-800 transition cursor-pointer">
-                        Ir a Inscripción
-                    </button>
                 </div>
+            </div>
+        </main>
+    </div>
 
-                <!-- ESTADO 2: PENDIENTE DE APROBACIÓN (REGISTRADO PERO SIN VALIDACIÓN ADMIN) -->
-                <div id="comp-pendiente" class="hidden text-center py-8 space-y-6">
+    <!-- ==========================================
+         VISTA GLOBAL 2: WORKSPACE EXCLUSIVO DEL ALUMNO (SESIÓN SEPARADA)
+    =========================================== -->
+    <div id="vista-estudiante" class="hidden no-print max-w-6xl mx-auto px-4 py-6 space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-900 pb-5">
+            <div>
+                <div class="inline-flex items-center gap-1.5 bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-orange-500/20">
+                    <span class="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
+                    Sesión de Estudiante Activa
+                </div>
+                <h1 id="lblEstudianteNombre" class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">Estudiante</h1>
+                <p id="lblEstudianteMatricula" class="text-xs text-gray-500">Matrícula: -</p>
+            </div>
+            <button onclick="cerrarSesionAlumno()" class="bg-gray-900 border border-gray-800 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all">
+                Cerrar Sesión 🚪
+            </button>
+        </div>
+
+        <!-- Navegación del Alumno -->
+        <div class="flex overflow-x-auto gap-2 bg-gray-950/80 p-1.5 rounded-2xl border border-gray-900/60 no-print">
+            <button onclick="cambiarSeccionEstudiante('pase')" id="btn-sec-pase" class="flex-1 py-2.5 text-center rounded-xl bg-orange-600 text-white font-bold text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all">
+                🎟️ Mi Pase de Acceso
+            </button>
+            <button onclick="cambiarSeccionEstudiante('diapositivas')" id="btn-sec-diapositivas" class="flex-1 py-2.5 text-center rounded-xl text-gray-400 font-medium text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all hover:bg-gray-900/60 hover:text-white">
+                📺 Diapositivas de Estudio
+            </button>
+            <button onclick="cambiarSeccionEstudiante('aula')" id="btn-sec-aula" class="flex-1 py-2.5 text-center rounded-xl text-gray-400 font-medium text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all hover:bg-gray-900/60 hover:text-white">
+                📚 Material de Estudio
+            </button>
+            <button onclick="cambiarSeccionEstudiante('chat')" id="btn-sec-chat" class="flex-1 py-2.5 text-center rounded-xl text-gray-400 font-medium text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all hover:bg-gray-900/60 hover:text-white relative">
+                💬 Chat con Carlos
+            </button>
+        </div>
+
+        <!-- SECCIONES INTERNAS DEL ALUMNO -->
+        <div class="bg-gray-950/20 rounded-2xl border border-gray-900/50 shadow-2xl p-4 sm:p-6 md:p-8">
+            
+            <!-- SUBSECCIÓN A: MI PASE (COMPROBANTE) -->
+            <div id="est-seccion-pase" class="space-y-6">
+                <!-- PENDIENTE -->
+                <div id="est-pase-pendiente" class="hidden text-center py-8 space-y-4">
                     <div class="w-16 h-16 bg-orange-600/10 border border-orange-500/20 text-[#E04A15] rounded-full flex items-center justify-center text-3xl mx-auto animate-pulse">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </div>
                     <div class="space-y-2">
-                        <h3 class="text-lg font-black text-white uppercase">Validación en Proceso</h3>
+                        <h3 class="text-lg font-black text-white uppercase">Tu Referencia está en Validación</h3>
                         <p class="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
-                            Hemos recibido tu comprobante de pago. Tu referencia está siendo revisada por nuestro equipo administrativo para certificar la acreditación de los fondos.
+                            Estamos validando tu pago con el banco emisor. Carlos te enviará tu pase definitivo por WhatsApp en cuanto se aprueben los fondos.
                         </p>
-                    </div>
-                    <div class="bg-gray-950/40 p-4 rounded-xl border border-gray-900 max-w-sm mx-auto text-left text-xs text-gray-500 space-y-1.5">
-                        <p class="font-bold text-orange-400 text-[10px] uppercase tracking-wider">Detalles de espera:</p>
-                        <p>• Una vez que el facilitador apruebe tu referencia, se habilitará esta sesión para que imprimas tu comprobante oficial.</p>
                     </div>
                 </div>
 
-                <!-- ESTADO 3: APROBADO (COMPROBANTE DISPONIBLE PARA IMPRESIÓN) -->
-                <div id="comp-aprobado" class="hidden space-y-6">
-                    <div class="bg-emerald-600/10 border border-emerald-500/20 p-4 rounded-xl flex items-center gap-3">
-                        <i class="fa-solid fa-circle-check text-xl text-emerald-400 shrink-0"></i>
-                        <div>
-                            <p class="text-white font-bold text-xs uppercase">Referencia Aprobada por Carlos Igarza</p>
-                            <p class="text-gray-400 text-[10px]">Tu comprobante de acceso ya se encuentra listo para descargar o imprimir.</p>
-                        </div>
+                <!-- BLOQUEADO -->
+                <div id="est-pase-bloqueado" class="hidden text-center py-8 space-y-4">
+                    <div class="w-16 h-16 bg-red-600/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto">
+                        <i class="fa-solid fa-lock"></i>
                     </div>
+                    <div class="space-y-2">
+                        <h3 class="text-lg font-black text-white uppercase">Acceso no aprobado</h3>
+                        <p class="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
+                            No se ha podido validar tu pago o tu registro fue retirado. Si crees que se trata de un error, por favor ponte en contacto con Carlos.
+                        </p>
+                    </div>
+                </div>
 
-                    <!-- TARJETA DEL COMPROBANTE DIGITAL -->
-                    <div id="printReceiptArea" class="comprobante-card bg-stone-900/40 border border-gray-800 rounded-2xl p-6 space-y-6 shadow-xl relative text-left">
-                        <!-- Cabecera de Comprobante -->
+                <!-- APROBADO -->
+                <div id="est-pase-aprobado" class="hidden space-y-6">
+                    <div id="studentReceiptArea" class="bg-stone-900/40 border border-gray-800 rounded-2xl p-6 space-y-6 shadow-xl relative text-left">
                         <div class="flex justify-between items-start border-b border-gray-800/80 pb-4">
                             <div>
                                 <h3 class="text-lg font-black text-white tracking-tight uppercase">KROMA WORKSHOP</h3>
                                 <p class="text-[9px] text-orange-500 font-mono font-bold uppercase tracking-wider">Comprobante de Inscripción Oficial</p>
                             </div>
                             <div class="text-right">
-                                <p id="recMatricula" class="text-white font-mono font-black text-sm uppercase">-</p>
+                                <p id="lblRecMatricula" class="text-white font-mono font-black text-sm uppercase">KRM-0000</p>
                                 <p class="text-[8px] text-gray-500 uppercase">MATRÍCULA ALUMNO</p>
                             </div>
                         </div>
 
-                        <!-- Grilla de Información del Estudiante -->
                         <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-xs">
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Estudiante</p>
-                                <p id="recNombre" class="text-gray-200 font-bold uppercase">-</p>
+                                <p id="lblRecNombre" class="text-gray-200 font-bold uppercase">-</p>
                             </div>
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Edad</p>
-                                <p id="recEdad" class="text-gray-200 font-bold font-mono">-</p>
+                                <p id="lblRecEdad" class="text-gray-200 font-bold font-mono">-</p>
                             </div>
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Contacto / Correo</p>
-                                <p id="recContacto" class="text-gray-200 truncate">-</p>
+                                <p id="lblRecContacto" class="text-gray-200 truncate">-</p>
                             </div>
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Método de Pago</p>
-                                <p id="recMetodo" class="text-gray-200 font-semibold">-</p>
+                                <p id="lblRecMetodo" class="text-gray-200 font-semibold">-</p>
                             </div>
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Referencia Operación</p>
-                                <p id="recReferencia" class="text-emerald-400 font-mono font-bold">-</p>
+                                <p id="lblRecReferencia" class="text-emerald-400 font-mono font-bold">-</p>
                             </div>
                             <div>
                                 <p class="text-[8px] text-gray-500 uppercase font-bold">Fecha de Aprobación</p>
-                                <p id="recFecha" class="text-gray-200 font-mono font-bold">-</p>
+                                <p id="lblRecFecha" class="text-gray-200 font-mono font-bold">-</p>
                             </div>
                         </div>
 
-                        <!-- Línea decorativa del Código de Barras / QR Simulada -->
                         <div class="border-t border-gray-800/80 pt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
                             <div class="text-left space-y-1">
                                 <p class="text-[9px] text-gray-400 leading-normal"><i class="fa-solid fa-qrcode text-orange-500 mr-1"></i> <strong>Firma Digital KROMA</strong></p>
-                                <p class="text-[8px] text-gray-500 max-w-xs">Este documento certifica tu cupo activo en las 2 jornadas intensivas de capacitación textil en Guayana.</p>
+                                <p class="text-[8px] text-gray-500 max-w-xs">Presenta este comprobante impreso o digital al ingresar al taller el primer día.</p>
                             </div>
                             <div class="bg-white p-1 rounded-lg">
-                                <img id="recQR" src="" alt="Firma Electrónica QR" class="w-16 h-16">
+                                <img id="lblRecQR" src="" alt="Firma Electrónica QR" class="w-16 h-16">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Botón para Imprimir -->
-                    <button onclick="imprimirComprobanteEstudiante()" class="w-full bg-gray-900 active:bg-gray-800 text-gray-300 font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider border border-gray-800 transition shadow-lg cursor-pointer flex items-center justify-center gap-2 no-print">
+                    <button onclick="imprimirComprobanteEstudiante()" class="w-full bg-gray-900 hover:bg-gray-800 active:bg-gray-800 text-gray-300 font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider border border-gray-800 transition shadow-lg cursor-pointer flex items-center justify-center gap-2">
                         <i class="fa-solid fa-print"></i>
-                        <span>Imprimir Comprobante (Guardar PDF)</span>
+                        <span>Imprimir mi Comprobante (Guardar PDF)</span>
                     </button>
                 </div>
-
             </div>
-        </main>
 
-        <!-- ==========================================
-             5. PANEL ADMINISTRATIVO SECRETO PARA CARLOS
-        =========================================== -->
-        <footer class="no-print pt-4 border-t border-gray-950">
-            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900 max-w-sm mx-auto space-y-3">
-                <button onclick="toggleAdminPanel()" class="w-full text-center text-gray-500 hover:text-[#E04A15] text-[10px] font-mono tracking-widest uppercase transition cursor-pointer py-1.5 block">
-                    <i class="fa-solid fa-lock text-[9px] mr-1"></i> Panel de Validación Interna
-                </button>
-                
-                <div id="formAdmin" class="hidden space-y-3.5 pt-2 border-t border-gray-900">
-                    <div class="space-y-1">
-                        <p class="text-[10px] text-gray-400 italic leading-snug">Ingresa tu clave de administrador para aprobar la referencia cargada y liberar el comprobante.</p>
-                    </div>
-                    <div class="relative">
-                        <input type="password" id="adminClave" placeholder="Introduce tu clave secreta" oninput="comprobarClaveAdmin()" class="w-full bg-black border border-gray-900 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none">
-                    </div>
+            <!-- SUBSECCIÓN B: DIAPOSITIVAS DE ESTUDIO ANIMADAS (PREMIUM ACADEMIC DECK) -->
+            <div id="est-seccion-diapositivas" class="hidden space-y-6">
+                <div class="relative bg-gray-900/40 rounded-2xl border border-gray-850 p-6 min-h-[350px] flex flex-col justify-between overflow-hidden">
                     
-                    <!-- Tarjeta con la referencia pendiente cargada -->
-                    <div id="referenciaPendienteBox" class="hidden bg-black/60 p-3 rounded-lg border border-gray-900 space-y-2 text-xs">
-                        <p class="text-[9px] text-orange-400 font-bold uppercase tracking-wider">Referencia Pendiente:</p>
-                        <div class="text-gray-400 space-y-1 text-[11px] text-left">
-                            <p>Alumno: <span id="admNombre" class="text-white font-bold">-</span></p>
-                            <p>Método: <span id="admMetodo" class="text-white">-</span></p>
-                            <p>Referencia: <span id="admRef" class="text-emerald-400 font-mono font-bold">-</span></p>
+                    <!-- Diapositiva 1 -->
+                    <div id="academic-slide-1" class="academic-slide space-y-4">
+                        <span class="inline-block bg-orange-600/20 text-[#E04A15] border border-orange-500/30 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">Lección 1: Color Textil</span>
+                        <h3 class="text-xl md:text-2xl font-black text-white">Domando el Espacio CMYK y Perfiles de Color</h3>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                            Los dispositivos digitales generan color mediante la sumatoria de luces (<strong>RGB</strong>). Las impresoras e inyectoras textiles operan bajo síntesis sustractiva física de pigmentos (<strong>CMYK</strong>). Para evitar variaciones drásticas en tus estampados, debes calibrar tu Adobe Illustrator o Photoshop al estándar internacional <code class="bg-black/80 text-orange-400 px-1.5 py-0.5 rounded font-mono">Coated FOGRA39</code>.
+                        </p>
+                        <div class="grid grid-cols-2 gap-3 text-[11px] font-semibold mt-2">
+                            <div class="bg-black/40 border border-gray-900 p-3 rounded-lg"><span class="text-[#E04A15] font-black block">Monitor:</span> sRGB (Luz)</div>
+                            <div class="bg-black/40 border border-gray-900 p-3 rounded-lg"><span class="text-emerald-400 font-black block">Tela:</span> CMYK (Tinta)</div>
                         </div>
-                        <button type="button" onclick="procesarAprobacionAdministrativa()" class="w-full bg-emerald-600 active:bg-emerald-700 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all cursor-pointer">
-                            <i class="fa-solid fa-check-double mr-1"></i> Aprobar Referencia
-                        </button>
                     </div>
 
-                    <!-- Mensaje si no hay solicitudes pendientes -->
-                    <div id="noPendientesBox" class="text-center py-2 text-gray-600 text-xs uppercase tracking-widest">
-                        <i class="fa-solid fa-circle-info mr-1"></i> Sin solicitudes pendientes
+                    <!-- Diapositiva 2 -->
+                    <div id="academic-slide-2" class="academic-slide space-y-4 hidden">
+                        <span class="inline-block bg-orange-600/20 text-[#E04A15] border border-orange-500/30 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">Lección 2: Rescate Inteligente</span>
+                        <h3 class="text-xl md:text-2xl font-black text-white">Inteligencia Artificial para Logos de WhatsApp</h3>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                            El cliente promedio envía logos pixelados, de baja resolución o directamente capturas de pantalla de baja calidad por WhatsApp. Mediante escaladores neuronales generativos, podemos multiplicar por cuatro el tamaño de imagen de forma inteligente sin perder fidelidad o distorsionar los trazos.
+                        </p>
+                        <ul class="list-disc list-inside text-gray-500 text-[11px] space-y-1">
+                            <li>Usa <strong class="text-white">Vectorizer.ai</strong> para trazos vectoriales mecánicos exactos.</li>
+                            <li>Usa <strong class="text-white">Krea AI</strong> o upscalers con baja creatividad para ilustraciones.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Diapositiva 3 -->
+                    <div id="academic-slide-3" class="academic-slide space-y-4 hidden">
+                        <span class="inline-block bg-orange-600/20 text-[#E04A15] border border-orange-500/30 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">Lección 3: Formato DTF</span>
+                        <h3 class="text-xl md:text-2xl font-black text-white">Alineación de Capa de Fondo SpotWhite</h3>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                            La impresión DTF sobre telas oscuras exige una base sólida de tinta blanca de soporte para que el color se asiente con fuerza. En Photoshop, creamos un Canal de Tinta Plana (Spot Channel) con el nombre exacto de <code class="bg-black/80 text-orange-400 px-1.5 py-0.5 rounded font-mono">SpotWhite</code>. Aplicar un <strong>Choke (Contracción)</strong> de 1.5 píxeles evita que los bordes blancos sobresalgan.
+                        </p>
+                    </div>
+
+                    <!-- Diapositiva 4 -->
+                    <div id="academic-slide-4" class="academic-slide space-y-4 hidden">
+                        <span class="inline-block bg-orange-600/20 text-[#E04A15] border border-orange-500/30 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">Lección 4: Sublimación</span>
+                        <h3 class="text-xl md:text-2xl font-black text-white">Panelado y Márgenes Técnicos de Costura</h3>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                            En la sublimación de gran formato, cada pieza textil del patrón debe incluir un margen perimetral técnico (<strong>Sangrado</strong>) de al menos 1.5 cm. De lo contrario, en las líneas de corte y costura se generarán delgadas vetas blancas muy notorias. La resolución ideal de trabajo es fija en 150 DPI a escala real 1:1.
+                        </p>
+                    </div>
+
+                    <!-- Navegación del carrusel académico -->
+                    <div class="flex items-center justify-between border-t border-gray-900 pt-4 mt-6">
+                        <button onclick="navegarSlideAcademico(-1)" class="bg-black hover:bg-gray-900 text-gray-300 w-10 h-10 rounded-xl flex items-center justify-center border border-gray-800">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <span id="lblAcademicSlideCounter" class="text-xs font-mono text-gray-500">1 / 4</span>
+                        <button onclick="navegarSlideAcademico(1)" class="bg-black hover:bg-gray-900 text-gray-300 w-10 h-10 rounded-xl flex items-center justify-center border border-gray-800">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-        </footer>
+
+            <!-- SUBSECCIÓN C: CLASES & MATERIAL DE ESTUDIO -->
+            <div id="est-seccion-aula" class="hidden space-y-4">
+                <div class="space-y-3">
+                    <!-- Clase 1 -->
+                    <div class="bg-black/40 border border-gray-900/60 rounded-xl p-4">
+                        <button onclick="toggleClase(1)" class="w-full flex justify-between items-center text-left">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-orange-600/10 text-[#E04A15] flex items-center justify-center font-black text-xs">01</span>
+                                <div>
+                                    <p class="text-xs font-black text-white uppercase tracking-wider">Perfiles de Color ICC y CMYK</p>
+                                    <p class="text-[10px] text-gray-500">Asegura un tono idéntico entre tu monitor y el estampado textil.</p>
+                                </div>
+                            </div>
+                            <i id="clase-icon-1" class="fa-solid fa-chevron-down text-gray-600 transition-transform"></i>
+                        </button>
+                        <div id="clase-content-1" class="hidden mt-3 pt-3 border-t border-gray-900/60 text-xs text-gray-400 space-y-2">
+                            <p class="leading-relaxed">Los monitores operan bajo el espacio de luz <strong>RGB</strong>, mientras que los sistemas de estampación digital trabajan con tintas pigmentadas en formato <strong>CMYK</strong> o películas Spot directas. Para sincronizarlos sin variaciones drásticas:</p>
+                            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-gray-400">
+                                <li>Configura tu mesa de trabajo de Adobe Illustrator/Photoshop en el perfil estándar de la industria: <strong>Coated FOGRA39</strong>.</li>
+                                <li>Evita usar la mezcla por defecto de negro automático. Calibra manualmente tu negro absoluto para estampación digital en: <code class="bg-black px-1.5 py-0.5 rounded text-orange-400 font-mono">C: 75, M: 68, Y: 67, K: 90</code>.</li>
+                                <li>Siempre marca la opción "Incrustar perfil de color" al exportar tus archivos TIFF o PDF listos para imprimir.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Clase 2 -->
+                    <div class="bg-black/40 border border-gray-900/60 rounded-xl p-4">
+                        <button onclick="toggleClase(2)" class="w-full flex justify-between items-center text-left">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-orange-600/10 text-[#E04A15] flex items-center justify-center font-black text-xs">02</span>
+                                <div>
+                                    <p class="text-xs font-black text-white uppercase tracking-wider">Restauración de Archivos con IA</p>
+                                    <p class="text-[10px] text-gray-500">Recupera logos pixelados y capturas borrosas de clientes.</p>
+                                </div>
+                            </div>
+                            <i id="clase-icon-2" class="fa-solid fa-chevron-down text-gray-600 transition-transform"></i>
+                        </button>
+                        <div id="clase-content-2" class="hidden mt-3 pt-3 border-t border-gray-900/60 text-xs text-gray-400 space-y-2">
+                            <p class="leading-relaxed">La inteligencia artificial recrea la información de píxeles perdidos de forma generativa. Te enseñamos los pasos idóneos:</p>
+                            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-gray-400">
+                                <li>Para trazos vectoriales y logos con siluetas limpias, utiliza <strong>Vectorizer.ai</strong> para una auto-vectorización matemática exacta y editable.</li>
+                                <li>Para tramas o ilustraciones complejas de sublimación, usa herramientas de escalado como <strong>Krea</strong> o <strong>Magnific AI</strong> con un nivel de <em>Creatividad de Reducción</em> bajo (0.1 - 0.2) para que multiplique x4 la escala sin desvirtuar la forma original.</li>
+                                <li>Genera un fondo de contraste artificial para aislar siluetas complejas utilizando la selección de sujetos asistida en Photoshop.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBSECCIÓN D: CHAT DIRECTO CON CARLOS -->
+            <div id="est-seccion-chat" class="hidden space-y-4">
+                <div class="bg-gray-950/60 border border-gray-900 rounded-xl p-4 flex flex-col h-[350px]">
+                    <!-- Feed de Mensajes -->
+                    <div id="studentChatFeed" class="flex-1 overflow-y-auto space-y-3 p-2 text-xs">
+                        <!-- El JS inyectará el feed del chat aquí -->
+                    </div>
+                    <!-- Entrada de Mensaje -->
+                    <div class="mt-3 flex gap-2 border-t border-gray-900 pt-3">
+                        <input type="text" id="txtStudentMsg" placeholder="Hazle una pregunta académica a Carlos..." class="flex-1 bg-black border border-gray-900 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#E04A15]">
+                        <button onclick="enviarMensajeAlumno()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-xl text-xs"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VISTA GLOBAL 3: PORTAL SUPER-ADMIN DE CARLOS
+    =========================================== -->
+    <div id="vista-super-admin" class="hidden no-print max-w-6xl mx-auto px-4 py-6 space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-900 pb-5">
+            <div>
+                <div class="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    🔒 Portal Administrativo KROMA
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">KROMA Admin Portal</h1>
+                <p class="text-xs text-gray-500">Aprobación, Planillas y Canal de Mensajería Escolar</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="imprimirAsistenciaAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-print"></i> Planilla Asistencia
+                </button>
+                <button onclick="cerrarSuperAdmin()" class="bg-gray-900 border border-gray-800 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all">
+                    Cerrar Panel
+                </button>
+            </div>
+        </div>
+
+        <!-- Tarjetas de Estadísticas -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900">
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Total Registrados</p>
+                <p id="statTotal" class="text-2xl font-black text-white mt-1">0</p>
+            </div>
+            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900">
+                <p class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">Aprobados</p>
+                <p id="statAprobados" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+            </div>
+            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900">
+                <p class="text-[9px] text-orange-500 font-bold uppercase tracking-wider">Pendientes</p>
+                <p id="statPendientes" class="text-2xl font-black text-orange-400 mt-1">0</p>
+            </div>
+            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900">
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Recaudación Estimada</p>
+                <p id="statMonto" class="text-2xl font-black text-white mt-1">0 $</p>
+            </div>
+        </div>
+
+        <!-- Navegación Admin -->
+        <div class="flex border-b border-gray-900 pb-2 gap-4 text-xs font-bold uppercase tracking-wider">
+            <button onclick="cambiarSubseccionAdmin('solicitudes')" id="btn-adm-sol" class="text-orange-500 border-b-2 border-orange-500 pb-2">Solicitudes</button>
+            <button onclick="cambiarSubseccionAdmin('chats')" id="btn-adm-chat" class="text-gray-500 hover:text-white pb-2 relative">Mensajes de Alumnos <span id="badgeChatNotification" class="absolute -top-1.5 -right-3 w-2 h-2 bg-emerald-500 rounded-full border border-black hidden"></span></button>
+        </div>
+
+        <!-- CONTENIDOS INTERNOS DE ADMIN -->
+        <div id="adm-sub-solicitudes" class="space-y-4">
+            <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900">
+                <input type="text" id="busquedaAlumnos" oninput="filtrarAlumnosAdmin()" placeholder="🔍 Buscar alumno por nombre, matrícula o referencia..." class="w-full bg-black border border-gray-900 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#E04A15]">
+            </div>
+
+            <div class="bg-gray-950/60 border border-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-900 bg-black/40 text-gray-400 uppercase tracking-wider text-[9px]">
+                                <th class="p-4">Estudiante / Matrícula</th>
+                                <th class="p-4">Edad / Nivel</th>
+                                <th class="p-4">WhatsApp / Correo</th>
+                                <th class="p-4">Método / Referencia</th>
+                                <th class="p-4 text-center">Estado</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAlumnosAdmin" class="divide-y divide-gray-900 text-gray-300">
+                            <!-- JS cargará las filas de alumnos -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT HUB DE CARLOS (Módulo de Mensajería Escolar) -->
+        <div id="adm-sub-chats" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-950/60 border border-gray-900 rounded-2xl p-4 space-y-2 h-[400px] overflow-y-auto">
+                <h4 class="text-xs font-black uppercase text-gray-400 border-b border-gray-900 pb-2">Alumnos</h4>
+                <div id="adminChatStudentList" class="space-y-2">
+                    <!-- Se llena dinámicamente con las conversaciones activas -->
+                </div>
+            </div>
+            <div class="md:col-span-2 bg-gray-950/60 border border-gray-900 rounded-2xl p-4 flex flex-col h-[400px]">
+                <div id="adminActiveChatHeader" class="text-xs font-black text-white border-b border-gray-900 pb-2">
+                    Selecciona un alumno para iniciar la conversación.
+                </div>
+                <div id="adminChatFeed" class="flex-1 overflow-y-auto space-y-3 p-2 text-xs">
+                    <!-- Feed de mensajes del chat seleccionado -->
+                </div>
+                <div id="adminChatInputContainer" class="mt-3 flex gap-2 border-t border-gray-900 pt-3 hidden">
+                    <input type="text" id="txtAdminMsg" placeholder="Responder al estudiante..." class="flex-1 bg-black border border-gray-900 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#E04A15]">
+                    <button onclick="enviarMensajeAdmin()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-xl text-xs"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
 
     </div>
 
     <!-- ==========================================
-         6. JAVASCRIPT: LÓGICA DE NEGOCIO, SLIDERS Y MÓDULOS DE APROBACIÓN
+         PANEL ADMINISTRATIVO SECRETO EN PIE DE PÁGINA
+    =========================================== -->
+    <footer class="no-print pt-4 border-t border-gray-950">
+        <div class="bg-gray-950/60 p-4 rounded-2xl border border-gray-900 max-w-sm mx-auto space-y-3">
+            <button onclick="toggleAdminPanel()" class="w-full text-center text-gray-500 hover:text-[#E04A15] text-[10px] font-mono tracking-widest uppercase transition cursor-pointer py-1.5 block">
+                <i class="fa-solid fa-lock text-[9px] mr-1"></i> Panel de Validación Interna
+            </button>
+            
+            <div id="formAdmin" class="hidden space-y-3.5 pt-2 border-t border-gray-900">
+                <div class="relative">
+                    <input type="password" id="adminClave" placeholder="Introduce tu clave secreta" oninput="comprobarClaveAdmin()" class="w-full bg-black border border-gray-900 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT DE CONTROL, BASE DE DATOS Y CHAT
     =========================================== -->
     <script>
+        let alumnosDB = JSON.parse(localStorage.getItem('kroma_alumnos_v2')) || [];
+        let chatDB = JSON.parse(localStorage.getItem('kroma_chats_v2')) || [];
+        
         let currentSlide = 0;
+        let currentAcademicSlide = 0;
         const slides = document.querySelectorAll('.slide-item');
         const slideCounter = document.getElementById('slideCounterGlobal');
 
-        // Estado del registro actual en memoria
-        let registroActivo = null;
-        let pagoAprobado = false;
+        // Estado de sesión activa del alumno
+        let alumnoSesionActiva = null;
+        let chatActivoMatricula = null; // Matrícula de la conversación activa en el panel de Carlos
 
+        // Población de datos semillas
+        if (alumnosDB.length === 0) {
+            alumnosDB = [
+                {
+                    nombre: "Carlos Igarza",
+                    edad: "22",
+                    whatsapp: "+584221110236",
+                    correo: "igarzacarlos147@gmail.com",
+                    experiencia: "Avanzado",
+                    metodo: "Binance USDT (37$)",
+                    referencia: "091244",
+                    matricula: "KRM-9901",
+                    aprobado: true,
+                    fecha: "16/06/2026"
+                },
+                {
+                    nombre: "María Rodríguez",
+                    edad: "25",
+                    whatsapp: "+584128374829",
+                    correo: "maria.r@gmail.com",
+                    experiencia: "Principiante",
+                    metodo: "Pago Móvil (40$)",
+                    referencia: "837411",
+                    matricula: "KRM-2384",
+                    aprobado: false,
+                    fecha: "16/06/2026"
+                }
+            ];
+            localStorage.setItem('kroma_alumnos_v2', JSON.stringify(alumnosDB));
+        }
+
+        // --- SISTEMA DE NAVEGACIÓN PÚBLICA ---
         function cambiarSesion(sesionId) {
             document.getElementById('sesion-temario').classList.add('hidden');
             document.getElementById('sesion-registro').classList.add('hidden');
@@ -492,6 +796,7 @@
             }
         }
 
+        // --- CAROUSEL PÚBLICO ---
         function actualizarCarrusel() {
             slides.forEach((slide, index) => {
                 if (index === currentSlide) {
@@ -515,6 +820,23 @@
             actualizarCarrusel();
         }
 
+        // --- CAROUSEL ACADÉMICO DEL ALUMNO ---
+        function navegarSlideAcademico(direccion) {
+            const totalSlides = 4;
+            currentAcademicSlide = (currentAcademicSlide + direccion + totalSlides) % totalSlides;
+            
+            for (let i = 1; i <= totalSlides; i++) {
+                const sl = document.getElementById(`academic-slide-${i}`);
+                if (i === (currentAcademicSlide + 1)) {
+                    sl.classList.remove('hidden');
+                } else {
+                    sl.classList.add('hidden');
+                }
+            }
+            document.getElementById('lblAcademicSlideCounter').textContent = `${currentAcademicSlide + 1} / ${totalSlides}`;
+        }
+
+        // --- SISTEMA DE TOASTS Y COPIADO ---
         function mostrarToast(mensaje, esExito = true) {
             const toast = document.getElementById('toastNotification');
             const icon = document.getElementById('toastIcon');
@@ -533,7 +855,6 @@
         }
 
         function copiarTexto(texto, elemento) {
-            // Clipboard fallback para iFrames
             const inputAux = document.createElement("input");
             inputAux.setAttribute("value", texto);
             document.body.appendChild(inputAux);
@@ -541,7 +862,7 @@
             document.execCommand("copy");
             document.body.removeChild(inputAux);
 
-            mostrarToast("Copiado al portapapeles correctamente");
+            mostrarToast("Copiado al portapapeles");
             const iconoOriginal = elemento.innerHTML;
             elemento.innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i>';
             setTimeout(() => { elemento.innerHTML = iconoOriginal; }, 1500);
@@ -552,123 +873,496 @@
             formAdmin.classList.toggle('hidden');
         }
 
-        // CONTROL DE REGISTRO DE FORMULARIO
+        // --- REGISTRO DEL ALUMNO ---
         document.getElementById('registroForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const matriculaGenerada = "KRM-" + Math.floor(1000 + Math.random() * 9000);
 
-            registroActivo = {
+            const nuevoAlumno = {
                 nombre: formData.get('Nombre'),
                 edad: formData.get('Edad'),
                 whatsapp: formData.get('WhatsApp'),
-                correo: formData.get('Correo'),
+                correo: formData.get('Correo').toLowerCase().trim(),
                 experiencia: formData.get('Experiencia'),
                 metodo: formData.get('Metodo_Pago'),
-                referencia: formData.get('Referencia'),
+                referencia: formData.get('Referencia').trim(),
                 matricula: matriculaGenerada,
+                aprobado: false,
                 fecha: new Date().toLocaleDateString('es-ES')
             };
 
-            // Creamos un mensaje dinámico incluyendo todos los datos solicitados
-            const mensajeWA = encodeURIComponent(`¡Hola Carlos! Acabo de registrar mi pago para el Taller Textil KROMA.\n\n*Datos de Registro:*\n• Nombre: ${registroActivo.nombre}\n• Edad: ${registroActivo.edad} años\n• Correo: ${registroActivo.correo}\n• WhatsApp: ${registroActivo.whatsapp}\n• Método de Pago: ${registroActivo.metodo}\n• Referencia: ${registroActivo.referencia}\n• Matrícula: ${registroActivo.matricula}\n\nAdjunto el comprobante de la operación.`);
-            document.getElementById('waEsperaBtn').href = `https://wa.me/584221110236?text=${mensajeWA}`;
-            
-            document.getElementById('contenedor-wa').classList.remove('hidden');
-            
-            // Actualizar vista del Comprobante (Fase Espera)
-            document.getElementById('comp-bloqueado').classList.add('hidden');
-            document.getElementById('comp-pendiente').classList.remove('hidden');
-            document.getElementById('comp-aprobado').classList.add('hidden');
-
-            // Actualizar Panel Admin Interno con la nueva solicitud pendiente
-            document.getElementById('admNombre').textContent = registroActivo.nombre;
-            document.getElementById('admMetodo').textContent = registroActivo.metodo;
-            document.getElementById('admRef').textContent = registroActivo.referencia;
-            document.getElementById('noPendientesBox').classList.add('hidden');
-            document.getElementById('referenciaPendienteBox').classList.remove('hidden');
-
-            mostrarToast("¡Registro procesado! Redirigiendo a verificación.");
-            cambiarSesion('comprobante');
-        });
-
-        // COMPROBACIÓN DE CONTRASEÑA EN TIEMPO REAL
-        function comprobarClaveAdmin() {
-            const clave = document.getElementById('adminClave').value;
-            // Si la clave es correcta y hay una solicitud pendiente, mostrar el box
-            if (clave === "kroma2026") {
-                if (registroActivo && !pagoAprobado) {
-                    document.getElementById('referenciaPendienteBox').classList.remove('hidden');
-                    document.getElementById('noPendientesBox').classList.add('hidden');
-                } else {
-                    document.getElementById('noPendientesBox').classList.remove('hidden');
-                    document.getElementById('referenciaPendienteBox').classList.add('hidden');
-                    document.getElementById('noPendientesBox').textContent = "Conectado. Sin referencias por aprobar.";
-                }
-            } else {
-                document.getElementById('referenciaPendienteBox').classList.add('hidden');
-                if (clave.length > 0) {
-                    document.getElementById('noPendientesBox').classList.remove('hidden');
-                    document.getElementById('noPendientesBox').innerHTML = '<span class="text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Clave incorrecta</span>';
-                }
-            }
-        }
-
-        // PROCESAR LA APROBACIÓN POR CARLOS
-        function procesarAprobacionAdministrativa() {
-            const clave = document.getElementById('adminClave').value;
-            if (clave !== "kroma2026") {
-                mostrarToast("La clave secreta ingresada es incorrecta", false);
+            const duplicado = alumnosDB.find(al => al.referencia === nuevoAlumno.referencia);
+            if (duplicado) {
+                mostrarToast("Este número de referencia ya está registrado.", false);
                 return;
             }
 
-            pagoAprobado = true;
+            alumnosDB.push(nuevoAlumno);
+            localStorage.setItem('kroma_alumnos_v2', JSON.stringify(alumnosDB));
 
-            // Llenar datos de la tarjeta digital de Comprobante
-            document.getElementById('recMatricula').textContent = registroActivo.matricula;
-            document.getElementById('recNombre').textContent = registroActivo.nombre;
-            document.getElementById('recEdad').textContent = registroActivo.edad + " Años";
-            document.getElementById('recContacto').textContent = registroActivo.correo;
-            document.getElementById('recMetodo').textContent = registroActivo.metodo;
-            document.getElementById('recReferencia').textContent = registroActivo.referencia;
-            document.getElementById('recFecha').textContent = registroActivo.fecha;
+            // Iniciar sesión del estudiante de inmediato
+            alumnoSesionActiva = nuevoAlumno;
 
-            // Generar código QR oficial usando la API QuickChart
-            const qrPayload = encodeURIComponent(`KROMA_TICKET:${registroActivo.matricula}|ALUMNO:${registroActivo.nombre}|REF:${registroActivo.referencia}`);
-            document.getElementById('recQR').src = `https://quickchart.io/qr?text=${qrPayload}&size=150&margin=1`;
+            // WhatsApp Webhook Setup
+            const mensajeWA = encodeURIComponent(`¡Hola Carlos! Acabo de registrar mi pago para el Taller Textil KROMA.\n\n*Datos de Registro:*\n• Nombre: ${nuevoAlumno.nombre}\n• Edad: ${nuevoAlumno.edad} años\n• Correo: ${nuevoAlumno.correo}\n• WhatsApp: ${nuevoAlumno.whatsapp}\n• Método de Pago: ${nuevoAlumno.metodo}\n• Referencia: ${nuevoAlumno.referencia}\n• Matrícula: ${nuevoAlumno.matricula}\n\nAdjunto el comprobante de la operación.`);
+            document.getElementById('waEsperaBtn').href = `https://wa.me/584221110236?text=${mensajeWA}`;
+            document.getElementById('contenedor-wa').classList.remove('hidden');
 
-            // Actualizar visualización del Comprobante a "Aprobado"
-            document.getElementById('comp-pendiente').classList.add('hidden');
-            document.getElementById('comp-aprobado').classList.remove('hidden');
-            document.getElementById('badgeAprobado').classList.remove('hidden');
+            mostrarToast("¡Registro Exitoso! Notifica tu pago.");
+            document.getElementById('registroForm').reset();
+            
+            // Forzar entrada a su sesión
+            entrarAlWorkspaceEstudiante();
+        });
 
-            // Actualizar el Panel Admin
-            document.getElementById('referenciaPendienteBox').classList.add('hidden');
-            document.getElementById('noPendientesBox').classList.remove('hidden');
-            document.getElementById('noPendientesBox').innerHTML = '<span class="text-emerald-500 font-bold"><i class="fa-solid fa-circle-check"></i> Pago Aprobado Exitosamente</span>';
+        // --- CONTROL DE ACCESO AL PORTAL DE ALUMNO ---
+        function buscarComprobanteAlumno() {
+            const correo = document.getElementById('loginCorreo').value.toLowerCase().trim();
+            const referencia = document.getElementById('loginRef').value.trim();
 
-            mostrarToast("¡Referencia validada! Pase habilitado en pantalla.");
+            if (!correo || !referencia) {
+                mostrarToast("Por favor ingresa ambos campos.", false);
+                return;
+            }
 
-            // Añadir de forma silenciosa el registro a la planilla de asistencia de impresión
+            alumnosDB = JSON.parse(localStorage.getItem('kroma_alumnos_v2')) || [];
+            const alumno = alumnosDB.find(al => al.correo === correo && al.referencia === referencia);
+
+            if (alumno) {
+                alumnoSesionActiva = alumno;
+                mostrarToast(`¡Bienvenido de vuelta, ${alumno.nombre.split(" ")[0]}!`);
+                entrarAlWorkspaceEstudiante();
+            } else {
+                mostrarToast("No encontramos registros con esos datos.", false);
+            }
+        }
+
+        function entrarAlWorkspaceEstudiante() {
+            // Ocultar landing pública, desplegar workspace privado
+            document.getElementById('content-main-app').classList.add('hidden');
+            document.getElementById('vista-estudiante').classList.remove('hidden');
+
+            document.getElementById('lblEstudianteNombre').textContent = alumnoSesionActiva.nombre;
+            document.getElementById('lblEstudianteMatricula').textContent = `Matrícula oficial: ${alumnoSesionActiva.matricula}`;
+            
+            // Por defecto abrir pestaña de Comprobante
+            cambiarSeccionEstudiante('pase');
+        }
+
+        function cerrarSesionAlumno() {
+            alumnoSesionActiva = null;
+            document.getElementById('content-main-app').classList.remove('hidden');
+            document.getElementById('vista-estudiante').classList.add('hidden');
+            document.getElementById('loginCorreo').value = '';
+            document.getElementById('loginRef').value = '';
+            cambiarSesion('comprobante');
+        }
+
+        function cambiarSeccionEstudiante(seccion) {
+            document.getElementById('est-seccion-pase').classList.add('hidden');
+            document.getElementById('est-seccion-diapositivas').classList.add('hidden');
+            document.getElementById('est-seccion-aula').classList.add('hidden');
+            document.getElementById('est-seccion-chat').classList.add('hidden');
+
+            const secciones = ['pase', 'diapositivas', 'aula', 'chat'];
+            secciones.forEach(sec => {
+                const btn = document.getElementById(`btn-sec-${sec}`);
+                btn.className = "flex-1 py-2.5 text-center rounded-xl text-gray-400 font-medium text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all hover:bg-gray-900/60 hover:text-white";
+            });
+
+            document.getElementById(`est-seccion-${seccion}`).classList.remove('hidden');
+            document.getElementById(`btn-sec-${seccion}`).className = "flex-1 py-2.5 text-center rounded-xl bg-orange-600 text-white font-bold text-xs uppercase tracking-wider whitespace-nowrap px-4 transition-all";
+
+            if (seccion === 'pase') {
+                renderizarPaseEstudiante();
+            } else if (seccion === 'chat') {
+                renderizarChatEstudiante();
+            }
+        }
+
+        function renderizarPaseEstudiante() {
+            const pasePendiente = document.getElementById('est-pase-pendiente');
+            const paseBloqueado = document.getElementById('est-pase-bloqueado');
+            const paseAprobado = document.getElementById('est-pase-aprobado');
+
+            pasePendiente.classList.add('hidden');
+            paseBloqueado.classList.add('hidden');
+            paseAprobado.classList.add('hidden');
+
+            // Refrescar datos de la base de datos local por si hubo aprobación
+            alumnosDB = JSON.parse(localStorage.getItem('kroma_alumnos_v2')) || [];
+            const actual = alumnosDB.find(a => a.matricula === alumnoSesionActiva.matricula);
+
+            if (!actual) {
+                paseBloqueado.classList.remove('hidden');
+                return;
+            }
+
+            if (!actual.aprobado) {
+                pasePendiente.classList.remove('hidden');
+                const mensajeWA = encodeURIComponent(`¡Hola Carlos! Estoy esperando la verificación de mi pago para el Taller KROMA.\n\n*Mis Datos:*\n• Nombre: ${actual.nombre}\n• Referencia: ${actual.referencia}`);
+                document.getElementById('waPendienteBtn').href = `https://wa.me/584221110236?text=${mensajeWA}`;
+            } else {
+                paseAprobado.classList.remove('hidden');
+                document.getElementById('lblRecMatricula').textContent = actual.matricula;
+                document.getElementById('lblRecNombre').textContent = actual.nombre;
+                document.getElementById('lblRecEdad').textContent = actual.edad + " Años";
+                document.getElementById('lblRecContacto').textContent = actual.correo;
+                document.getElementById('lblRecMetodo').textContent = actual.metodo;
+                document.getElementById('lblRecReferencia').textContent = actual.referencia;
+                document.getElementById('lblRecFecha').textContent = actual.fecha;
+
+                const qrPayload = encodeURIComponent(`KROMA_TICKET:${actual.matricula}|ALUMNO:${actual.nombre}|REF:${actual.referencia}`);
+                document.getElementById('lblRecQR').src = `https://quickchart.io/qr?text=${qrPayload}&size=150&margin=1`;
+            }
+        }
+
+        // --- SISTEMA DE CLASES INTERACTIVAS (AULA VIRTUAL) ---
+        function toggleClase(numero) {
+            const content = document.getElementById(`clase-content-${numero}`);
+            const icon = document.getElementById(`clase-icon-${numero}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- SISTEMA DE CHATS DE ALUMNO ---
+        function renderizarChatEstudiante() {
+            const feed = document.getElementById('studentChatFeed');
+            feed.innerHTML = '';
+
+            chatDB = JSON.parse(localStorage.getItem('kroma_chats_v2')) || [];
+            const misMensajes = chatDB.filter(m => m.matricula === alumnoSesionActiva.matricula);
+
+            if (misMensajes.length === 0) {
+                feed.innerHTML = `<div class="text-center text-gray-600 py-10 uppercase tracking-widest text-[10px]">Sin mensajes académicos anteriores</div>`;
+                return;
+            }
+
+            misMensajes.forEach(msg => {
+                const alignClass = msg.remitente === 'alumno' ? 'text-right' : 'text-left';
+                const bgClass = msg.remitente === 'alumno' ? 'bg-orange-600/10 text-orange-200 border border-orange-500/20' : 'bg-gray-900 text-gray-300 border border-gray-800';
+                
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl max-w-xs space-y-1 ${alignClass} inline-block ${bgClass}`;
+                card.innerHTML = `
+                    <p class="font-bold text-[9px] uppercase tracking-wider text-gray-500">${msg.remitente === 'alumno' ? 'Tú' : 'Carlos Igarza'}</p>
+                    <p class="text-xs leading-normal">${msg.texto}</p>
+                `;
+                
+                const container = document.createElement('div');
+                container.className = msg.remitente === 'alumno' ? 'text-right w-full' : 'text-left w-full';
+                container.appendChild(card);
+                feed.appendChild(container);
+            });
+
+            // Auto-scroll al final del chat
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function enviarMensajeAlumno() {
+            const input = document.getElementById('txtStudentMsg');
+            const texto = input.value.trim();
+
+            if (!texto) return;
+
+            const nuevoMsg = {
+                id: Date.now(),
+                matricula: alumnoSesionActiva.matricula,
+                nombre: alumnoSesionActiva.nombre,
+                remitente: "alumno",
+                texto: texto,
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            chatDB.push(nuevoMsg);
+            localStorage.setItem('kroma_chats_v2', JSON.stringify(chatDB));
+            input.value = '';
+
+            renderizarChatEstudiante();
+        }
+
+        // --- PORTAL DE CONTROL DE SUPER ADMIN (CARLOS) ---
+        function comprobarClaveAdmin() {
+            const clave = document.getElementById('adminClave').value;
+            if (clave === "kroma2026") {
+                document.getElementById('content-main-app').classList.add('hidden');
+                document.getElementById('vista-super-admin').classList.remove('hidden');
+                mostrarToast("Bienvenido al Portal de Gestión, Carlos.");
+                document.getElementById('adminClave').value = '';
+                document.getElementById('formAdmin').classList.add('hidden');
+                
+                cambiarSubseccionAdmin('solicitudes');
+            }
+        }
+
+        function cerrarSuperAdmin() {
+            document.getElementById('content-main-app').classList.remove('hidden');
+            document.getElementById('vista-super-admin').classList.add('hidden');
+        }
+
+        function cambiarSubseccionAdmin(seccion) {
+            document.getElementById('adm-sub-solicitudes').classList.add('hidden');
+            document.getElementById('adm-sub-chats').classList.add('hidden');
+
+            document.getElementById('btn-adm-sol').className = "text-gray-500 hover:text-white pb-2";
+            document.getElementById('btn-adm-chat').className = "text-gray-500 hover:text-white pb-2 relative";
+
+            document.getElementById(`adm-sub-${seccion}`).classList.remove('hidden');
+            document.getElementById(`btn-adm-${seccion === 'solicitudes' ? 'sol' : 'chat'}`).className = "text-orange-500 border-b-2 border-orange-500 pb-2 relative";
+
+            if (seccion === 'solicitudes') {
+                renderizarDashboardAdmin();
+            } else if (seccion === 'chats') {
+                renderizarChatHubAdmin();
+            }
+        }
+
+        function renderizarDashboardAdmin(filtro = '') {
+            const tbody = document.getElementById('tablaAlumnosAdmin');
+            tbody.innerHTML = '';
+
+            let totalAprobados = 0;
+            let totalPendientes = 0;
+            let totalRecaudado = 0;
+
+            alumnosDB = JSON.parse(localStorage.getItem('kroma_alumnos_v2')) || [];
+
+            alumnosDB.forEach((alumno, index) => {
+                if (alumno.aprobado) {
+                    totalAprobados++;
+                    totalRecaudado += alumno.metodo.includes("37") ? 37 : 40;
+                } else {
+                    totalPendientes++;
+                }
+
+                if (filtro) {
+                    const matchNombre = alumno.nombre.toLowerCase().includes(filtro);
+                    const matchMatricula = alumno.matricula.toLowerCase().includes(filtro);
+                    const matchReferencia = alumno.referencia.toLowerCase().includes(filtro);
+                    if (!matchNombre && !matchMatricula && !matchReferencia) return;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-900 bg-gray-950/20 hover:bg-black/30 transition-all";
+
+                const stateBadge = alumno.aprobado 
+                    ? '<span class="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20 text-[10px]">APROBADO</span>'
+                    : '<span class="inline-flex items-center gap-1 bg-orange-500/10 text-orange-400 font-bold px-2 py-0.5 rounded border border-orange-500/20 text-[10px]">PENDIENTE</span>';
+
+                const actionButton = alumno.aprobado
+                    ? '<span class="text-gray-500 italic text-[10px] block py-1">Validado ✓</span>'
+                    : `<button onclick="aprobarAlumnoAdmin(${index})" class="bg-emerald-600 active:scale-95 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase transition cursor-pointer flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Aprobar</button>`;
+
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <span class="text-white font-bold text-sm block">${alumno.nombre}</span>
+                        <span class="text-gray-500 text-[10px] font-mono">${alumno.matricula}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-gray-300 block">${alumno.edad} años</span>
+                        <span class="text-gray-500 text-[10px] block font-semibold">${alumno.experiencia}</span>
+                    </td>
+                    <td class="p-4 space-y-0.5">
+                        <span class="text-gray-300 font-mono block">${alumno.whatsapp}</span>
+                        <span class="text-gray-500 block">${alumno.correo}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-gray-300 block">${alumno.metodo}</span>
+                        <span class="text-emerald-400 font-mono font-bold block">Ref: ${alumno.referencia}</span>
+                    </td>
+                    <td class="p-4 text-center">${stateBadge}</td>
+                    <td class="p-4 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-1.5">
+                            ${actionButton}
+                            <button onclick="eliminarAlumnoAdmin(${index})" class="text-gray-600 hover:text-rose-500 transition px-1.5 py-1 text-sm cursor-pointer" title="Eliminar Alumno"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('statTotal').textContent = alumnosDB.length;
+            document.getElementById('statAprobados').textContent = totalAprobados;
+            document.getElementById('statPendientes').textContent = totalPendientes;
+            document.getElementById('statMonto').textContent = `${totalRecaudado} $`;
+
+            // Refrescar planilla de asistencia automáticamente
+            renderizarHojaAsistenciaImpresion();
+        }
+
+        function filtrarAlumnosAdmin() {
+            const value = document.getElementById('busquedaAlumnos').value.toLowerCase().trim();
+            renderizarDashboardAdmin(value);
+        }
+
+        function aprobarAlumnoAdmin(index) {
+            const alumno = alumnosDB[index];
+            alumno.aprobado = true;
+            
+            localStorage.setItem('kroma_alumnos_v2', JSON.stringify(alumnosDB));
+            
+            mostrarToast(`Inscripción de ${alumno.nombre} aprobada.`);
+            renderizarDashboardAdmin();
+
+            // Mensaje pre-formateado automatizado para enviar por WhatsApp
+            const textoMensaje = `¡Hola ${alumno.nombre}! 🎉 Tu comprobante para el *Taller Intensivo KROMA* ha sido verificado con éxito por Carlos Igarza.\n\n*Tus datos de acceso:*\n• *Matrícula Oficial:* ${alumno.matricula}\n• *Clave de Plataforma:* KROMA-2026-TXT\n\nIngresa al sitio en la pestaña "Comprobante" con tu correo y referencia (${alumno.referencia}) para descargar tu pase digital.\n\n¡Nos vemos en el taller! 🏫`;
+            const urlWhatsApp = `https://wa.me/${alumno.whatsapp.replace('+', '').replace(' ', '')}?text=${encodeURIComponent(textoMensaje)}`;
+            
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        function eliminarAlumnoAdmin(index) {
+            if (confirm(`¿Eliminar a ${alumnosDB[index].nombre} permanentemente del sistema?`)) {
+                alumnosDB.splice(index, 1);
+                localStorage.setItem('kroma_alumnos_v2', JSON.stringify(alumnosDB));
+                mostrarToast("Estudiante eliminado correctamente.");
+                renderizarDashboardAdmin();
+            }
+        }
+
+        // --- CHAT HUB ADMINISTRATIVO DE CARLOS ---
+        function renderizarChatHubAdmin() {
+            const listContainer = document.getElementById('adminChatStudentList');
+            listContainer.innerHTML = '';
+
+            chatDB = JSON.parse(localStorage.getItem('kroma_chats_v2')) || [];
+            
+            // Obtener estudiantes únicos que han enviado mensajes
+            const matriculasConMensajes = [...new Set(chatDB.map(m => m.matricula))];
+
+            if (matriculasConMensajes.length === 0) {
+                listContainer.innerHTML = `<div class="text-center text-gray-600 py-10 uppercase tracking-widest text-[9px]">Sin consultas académicas</div>`;
+                return;
+            }
+
+            matriculasConMensajes.forEach(mat => {
+                const infoAl = alumnosDB.find(a => a.matricula === mat) || { nombre: "Estudiante Desconocido" };
+                const activoClass = chatActivoMatricula === mat ? 'bg-orange-600 text-white font-bold' : 'bg-gray-900/60 text-gray-300 hover:bg-gray-800';
+                
+                const item = document.createElement('button');
+                item.className = `w-full text-left p-3 rounded-xl text-xs transition-all space-y-1 ${activoClass}`;
+                item.onclick = () => seleccionarChatAdmin(mat);
+                item.innerHTML = `
+                    <p class="font-black truncate uppercase tracking-wider">${infoAl.nombre}</p>
+                    <p class="text-[9px] font-mono opacity-60">${mat}</p>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (chatActivoMatricula) {
+                seleccionarChatAdmin(chatActivoMatricula);
+            }
+        }
+
+        function seleccionarChatAdmin(matricula) {
+            chatActivoMatricula = matricula;
+            
+            const infoAl = alumnosDB.find(a => a.matricula === matricula) || { nombre: "Estudiante" };
+            document.getElementById('adminActiveChatHeader').textContent = `Chat Académico con: ${infoAl.nombre} (${matricula})`;
+            document.getElementById('adminChatInputContainer').classList.remove('hidden');
+
+            const feed = document.getElementById('adminChatFeed');
+            feed.innerHTML = '';
+
+            const mensajes = chatDB.filter(m => m.matricula === matricula);
+
+            mensajes.forEach(msg => {
+                const alignClass = msg.remitente === 'admin' ? 'text-right' : 'text-left';
+                const bgClass = msg.remitente === 'admin' ? 'bg-orange-600/10 text-orange-200 border border-orange-500/20' : 'bg-gray-900 text-gray-300 border border-gray-800';
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl max-w-xs space-y-1 ${alignClass} inline-block ${bgClass}`;
+                card.innerHTML = `
+                    <p class="font-bold text-[9px] uppercase tracking-wider text-gray-500">${msg.remitente === 'admin' ? 'Carlos' : 'Alumno'}</p>
+                    <p class="text-xs leading-normal">${msg.texto}</p>
+                `;
+
+                const container = document.createElement('div');
+                container.className = msg.remitente === 'admin' ? 'text-right w-full' : 'text-left w-full';
+                container.appendChild(card);
+                feed.appendChild(container);
+            });
+
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function enviarMensajeAdmin() {
+            const input = document.getElementById('txtAdminMsg');
+            const texto = input.value.trim();
+
+            if (!texto || !chatActivoMatricula) return;
+
+            const nuevoMsg = {
+                id: Date.now(),
+                matricula: chatActivoMatricula,
+                remitente: "admin",
+                texto: texto,
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            chatDB.push(nuevoMsg);
+            localStorage.setItem('kroma_chats_v2', JSON.stringify(chatDB));
+            input.value = '';
+
+            seleccionarChatAdmin(chatActivoMatricula);
+        }
+
+        // --- SISTEMA DE IMPRESIÓN EXCLUSIVA (SIN INTERFERENCIAS) ---
+        function renderizarHojaAsistenciaImpresion() {
             const tbody = document.getElementById('printAttendanceRows');
-            const totalFilas = tbody.children.length + 1;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="border border-black p-2 text-center font-mono">${totalFilas}</td>
-                <td class="border border-black p-2 font-mono font-bold">${registroActivo.matricula}</td>
-                <td class="border border-black p-2 uppercase">${registroActivo.nombre}</td>
-                <td class="border border-black p-2 text-center">${registroActivo.edad}</td>
-                <td class="border border-black p-2 font-mono">${registroActivo.whatsapp}</td>
-                <td class="border border-black p-2 font-mono text-gray-600">${registroActivo.referencia}</td>
-                <td class="border border-black p-2 text-center text-stone-300 font-light">_________________</td>
-            `;
-            tbody.appendChild(tr);
+            tbody.innerHTML = '';
+
+            const aprobados = alumnosDB.filter(al => al.aprobado);
+
+            aprobados.forEach((alumno, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-black p-2 text-center font-mono">${index + 1}</td>
+                    <td class="border border-black p-2 font-mono font-bold">${alumno.matricula}</td>
+                    <td class="border border-black p-2 uppercase">${alumno.nombre}</td>
+                    <td class="border border-black p-2 text-center">${alumno.edad}</td>
+                    <td class="border border-black p-2 font-mono">${alumno.whatsapp}</td>
+                    <td class="border border-black p-2 font-mono text-gray-600">${alumno.referencia}</td>
+                    <td class="border border-black p-2 text-center text-gray-300 font-light">_________________</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        // IMPRIMIR COMPROBANTE INDIVIDUAL DEL ESTUDIANTE
-        function imprimirComprobanteEstudiante() {
-            window.print();
+        function imprimirAsistenciaAdmin() {
+            renderizarHojaAsistenciaImpresion();
+
+            document.body.classList.remove('print-mode-receipt');
+            document.body.classList.add('print-mode-attendance');
+            setTimeout(() => {
+                window.print();
+            }, 1500);
         }
+
+        function imprimirComprobanteEstudiante() {
+            const printContainer = document.getElementById('receiptPrintContainer');
+            const ticketDigital = document.getElementById('studentReceiptArea');
+            
+            // Clonar contenido e inyectar en hoja de impresion
+            printContainer.innerHTML = ticketDigital.innerHTML;
+
+            document.body.classList.remove('print-mode-attendance');
+            document.body.classList.add('print-mode-receipt');
+            setTimeout(() => {
+                window.print();
+            }, 1500);
+        }
+
+        // Limpieza automática post-impresión
+        window.onafterprint = function() {
+            document.body.classList.remove('print-mode-attendance', 'print-mode-receipt');
+        };
     </script>
 </body>
 </html>
